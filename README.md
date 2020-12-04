@@ -1,2 +1,1 @@
-# gtool
-dev tool golang
+# devtool
