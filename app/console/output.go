@@ -3,9 +3,8 @@ package console
 import (
 	"os"
 
-	"github.com/pkg/errors"
-
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 )
 
 // Warn printf yellow
@@ -42,6 +41,7 @@ func FatalIfErr(err error, comment string) {
 	}
 }
 
+//Progress console progress log
 func Progress(start, finish string, call func()) {
 	Info(start)
 	call()

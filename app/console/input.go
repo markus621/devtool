@@ -30,6 +30,7 @@ func printmsg(msg string, vars []string, def string) {
 	Info("%s%s%s: ", msg, varsmsg, defmsg)
 }
 
+//Input console input request
 func Input(msg string, vars []string, def string) string {
 	printmsg(msg, vars, def)
 
@@ -55,6 +56,7 @@ func Input(msg string, vars []string, def string) string {
 	}
 }
 
+//InputBool console bool input request
 func InputBool(msg string, def bool) bool {
 	sdef := "n"
 	if def {
