@@ -1,7 +1,11 @@
 package utils
 
 import (
+	"archive/tar"
 	"bufio"
+	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,28 +13,20 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"os/user"
 	"strings"
+
+	"devtool/app/console"
 )
 
-var (
-	//DevToolPath ...
-	DevToolPath string
-	//UserHomePath ...
-	UserHomePath string
-)
-
-//Init ...
-func Init() {
-	UserHomePath = UserHomeDir()
-	DevToolPath = UserHomePath + "/.devtool"
-
-	if _, err := os.Stat(DevToolPath); os.IsNotExist(err) {
-		os.Mkdir(DevToolPath, 0744)
+//MakeDir check dir and create if not exist
+func MakeDir(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return os.MkdirAll(path, os.ModePerm)
 	}
+	return nil
 }
 
-//DownloadFile ...
+//DownloadFile download a file from the internet and save it to disk
 func DownloadFile(uri, filepath string) error {
 	resp, err := http.Get(uri)
 	if err != nil {
@@ -46,87 +42,133 @@ func DownloadFile(uri, filepath string) error {
 	return err
 }
 
-//HTTPRequestGET ...
-func HTTPRequestGET(uri string, v interface{}) ([]byte, error) {
+//HTTPGet make http get request
+func HTTPGet(uri string) ([]byte, error) {
 	r, err := http.Get(uri)
 	if err != nil {
 		return nil, err
 	}
 	defer r.Body.Close()
-
-	b, err := ioutil.ReadAll(r.Body)
-	if v != nil {
-		err = json.Unmarshal(b, v)
-	}
-	return b, err
+	return ioutil.ReadAll(r.Body)
 }
 
-//ExecCMD ...
+//HTTPJson ...
+func HTTPJson(uri string, v interface{}) error {
+	b, err := HTTPGet(uri)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, v)
+}
+
+//ExecCMD run the command in /bin/sh
 func ExecCMD(dir, cmd string, env []string) ([]byte, error) {
 	c := exec.Command("/bin/sh", "-xec", fmt.Sprintln(cmd, " <&-"))
-
 	if len(env) > 0 {
 		c.Env = append(os.Environ(), env...)
 	}
 	if len(dir) > 0 {
 		c.Dir = dir
 	}
-
 	return c.CombinedOutput()
 }
 
-//FindInFile ...
-func FindInFile(filepath, v string) bool {
-	f, err := os.Open(filepath)
-	if err != nil {
-		return false
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), v) {
-			return true
-		}
-	}
-
-	return false
-}
-
-//UserHomeDir ...
-func UserHomeDir() string {
-	u, err := user.Current()
-	if err != nil {
-		return "."
-	}
-
-	return u.HomeDir
-}
-
-//WriteToFile ...
-func WriteToFile(filepath string, v ...string) error {
+//WriteFile write strings to file
+func WriteFile(filepath string, v ...string) error {
 	var (
 		f   *os.File
 		fi  os.FileInfo
 		err error
 	)
-
 	fi, err = os.Lstat(filepath)
 	if err == nil {
 		f, err = os.OpenFile(filepath, os.O_APPEND|os.O_WRONLY, fi.Mode().Perm())
 	} else {
 		f, err = os.Create(filepath)
 	}
-
 	if err != nil {
 		return err
 	}
-
 	defer f.Close()
-
 	for _, vi := range v {
 		if _, err = f.WriteString(vi); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+//FindInFile find text in file
+func FindInFile(filepath, v string) bool {
+	f, err := os.Open(filepath)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), v) {
+			return true
+		}
+	}
+	return false
+}
+
+//ValidateHash check hash
+func ValidateHash(filename, hash string) error {
+	r, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	h := sha256.New()
+	if _, err := io.Copy(h, r); err != nil {
+		return err
+	}
+	filehash := hex.EncodeToString(h.Sum(nil))
+	if filehash != hash {
+		return fmt.Errorf("invalid hash: expected[%s] actual[%s]", hash, filehash)
+	}
+	return nil
+}
+
+//ExtractTar ...
+func ExtractTar(filename, path string) error {
+	path = strings.TrimRight(path, "/") + "/"
+	r, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	rgz, err := gzip.NewReader(r)
+	if err != nil {
+		return err
+	}
+	tr := tar.NewReader(rgz)
+	for true {
+		header, err := tr.Next()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(path+header.Name, 0755); err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			console.Info("extract: %s", path+header.Name)
+			newfile, err := os.Create(path + header.Name)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(newfile, tr); err != nil {
+				return err
+			}
+			newfile.Close()
+		default:
+			return fmt.Errorf("unknow file type")
 		}
 	}
 	return nil

@@ -1,19 +1,12 @@
 package commands
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
 	"regexp"
 
-	"github.com/markus621/devtool/app/console"
-	"github.com/markus621/devtool/app/utils"
-	"github.com/spf13/cobra"
-)
+	"devtool/app/console"
+	"devtool/app/pkg/golang"
 
-const (
-	goLinkTemplate = "https://golang.org/dl/%s.linux-amd64.tar.gz"
-	goVersionList  = "https://golang.org/dl/?mode=json"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -21,18 +14,15 @@ var (
 )
 
 type (
-	//GoInstall model
-	GoInstall struct {
-	}
-
-	//VersionResponse model
-	VersionResponse struct {
-		V string `json:"version"`
+	//GoLang model
+	GoLang struct {
+		path string
+		home string
 	}
 )
 
-//Run ...
-func (v *GoInstall) Run() *cobra.Command {
+//GoInstall ...
+func (c *CMD) GoInstall() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "goinstall",
 		Short:   "installing golang for linux",
@@ -42,16 +32,16 @@ func (v *GoInstall) Run() *cobra.Command {
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		version := args[0]
+		var hash string
+
+		golang := golang.New()
+		upderr := golang.UpdateSettings(c.home, c.getEnvfile())
+
+		versions, err := golang.VersionsList()
+		console.FatalIfErr(err, "can't get a list of possible versions")
 
 		if version == "tip" {
-			dlv := make([]VersionResponse, 0)
-			_, err := utils.HTTPRequestGET(goVersionList, &dlv)
-			console.FatalIfErr(err, "cant get last version")
-
-			if len(dlv) == 0 {
-				console.Error("cant get last version")
-			}
-			version = dlv[0].V
+			version = versions[0].Version
 		} else {
 			if !regexpVersion.Match([]byte(version)) {
 				console.Error("invalid version: %s expects like: 1.0.0", version)
@@ -59,26 +49,28 @@ func (v *GoInstall) Run() *cobra.Command {
 			version = "go" + version
 		}
 
-		tempFile, err := ioutil.TempFile(os.TempDir(), "goinstall*.gz")
-		console.FatalIfErr(err, "cant create temp tempFile")
-		defer func() {
-			console.FatalIfErr(os.Remove(tempFile.Name()), "cant remove temp tempFile")
-		}()
-
-		console.Progress(fmt.Sprintf("Start download version: %s", version), "---> Done", func() {
-			console.FatalIfErr(utils.DownloadFile(fmt.Sprintf(goLinkTemplate, version), tempFile.Name()), "download err")
-		})
-
-		gobinpath := utils.DevToolPath + "/go/bin"
-		profile := utils.UserHomeDir() + "/.profile"
-
-		out, err := utils.ExecCMD("", "tar -C "+utils.DevToolPath+" -xzf "+tempFile.Name(), nil)
-		console.Info(string(out))
-		console.FatalIfErr(err, "сant unpack the archive")
-
-		if !utils.FindInFile(profile, gobinpath) {
-			console.FatalIfErr(utils.WriteToFile(profile, "\n\nexport PATH=$PATH:"+gobinpath), "cant add install path to env")
+		for _, v := range versions {
+			if v.Version == version {
+				for _, f := range v.Files {
+					if f.Version == version && f.Os == c.osname && f.Arch == c.osarch {
+						version = f.Filename
+						hash = f.Sha256
+						break
+					}
+				}
+			}
 		}
+
+		if len(hash) == 0 {
+			console.Info("required version was not found: %s %s %s", version, c.osname, c.osarch)
+		} else {
+			console.Info("go: %s, %s", version, hash)
+		}
+
+		out, err := golang.Install(version, hash)
+		console.FatalIfErr(err, "installation error [%s]", out)
+
+		console.FatalIfErr(upderr, "update settings")
 	}
 
 	return cmd

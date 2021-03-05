@@ -35,9 +35,9 @@ func Debug(msg string, args ...interface{}) {
 }
 
 // FatalIfErr calls fatal if err not nil
-func FatalIfErr(err error, comment string) {
+func FatalIfErr(err error, comment string, args ...interface{}) {
 	if err != nil {
-		Fatal(errors.Wrap(err, comment))
+		Fatal(errors.Wrapf(err, comment, args...))
 	}
 }
 
