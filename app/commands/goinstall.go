@@ -70,6 +70,9 @@ func (c *CMD) GoInstall() *cobra.Command {
 		out, err := golang.Install(version, hash)
 		console.FatalIfErr(err, "installation error [%s]", out)
 
+		out, err = golang.UpdateEnv()
+		console.FatalIfErr(err, "update env error [%s]", out)
+
 		console.FatalIfErr(upderr, "update settings")
 	}
 
