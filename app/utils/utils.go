@@ -62,7 +62,7 @@ func HTTPJson(uri string, v interface{}) error {
 }
 
 //ExecCMD run the command in /bin/sh
-func ExecCMD(dir, cmd string, env []string) ([]byte, error) {
+func ExecCMD(dir, cmd string, env []string) (string, error) {
 	c := exec.Command("/bin/sh", "-xec", fmt.Sprintln(cmd, " <&-"))
 	if len(env) > 0 {
 		c.Env = append(os.Environ(), env...)
@@ -70,7 +70,8 @@ func ExecCMD(dir, cmd string, env []string) ([]byte, error) {
 	if len(dir) > 0 {
 		c.Dir = dir
 	}
-	return c.CombinedOutput()
+	b, err := c.CombinedOutput()
+	return string(b), err
 }
 
 //WriteFile write strings to file
@@ -154,12 +155,12 @@ func ExtractTar(filename, path string) error {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(path+header.Name, 0755); err != nil {
+			if err := os.MkdirAll(path+header.Name, header.FileInfo().Mode().Perm()); err != nil {
 				return err
 			}
 		case tar.TypeReg:
 			console.Info("extract: %s", path+header.Name)
-			newfile, err := os.Create(path + header.Name)
+			newfile, err := os.OpenFile(path+header.Name, os.O_RDWR|os.O_CREATE, header.FileInfo().Mode().Perm())
 			if err != nil {
 				return err
 			}

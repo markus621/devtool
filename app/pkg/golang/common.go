@@ -20,7 +20,6 @@ const (
 
 	templatePathEnv = `
 if [ -d "%s/bin" ] ; then
-	%s="%s"
     PATH="%s/bin:$PATH"
 fi
 `
@@ -61,7 +60,7 @@ func (c *GoLang) UpdateSettings(home, envfile string) error {
 				console.FatalIfErr(
 					utils.WriteFile(filename,
 						fmt.Sprintf("\n"+templatedevtoolStart, value),
-						fmt.Sprintf(templatePathEnv, value, key, value, value),
+						fmt.Sprintf(templatePathEnv, value, value),
 						fmt.Sprintf(templatedevtoolEnd+"\n", value),
 					),
 					"Update env file: %s", filename)
@@ -130,5 +129,11 @@ func (c *GoLang) Install(version, hash string) (string, error) {
 //VersionsList get go versions
 func (c *GoLang) VersionsList() (model []VersionsResponse, err error) {
 	err = utils.HTTPJson(goVersionURL, &model)
+	return
+}
+
+//UpdateEnv update go env
+func (c *GoLang) UpdateEnv() (out string, err error) {
+	out, err = utils.ExecCMD("", c.root+"/bin/go env -w GOROOT="+c.root+" GOPATH="+c.path, nil)
 	return
 }
