@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"devtool/app/console"
+	"github.com/markus621/devtool/app/console"
 )
 
 //noling: golint

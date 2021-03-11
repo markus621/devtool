@@ -1,12 +1,12 @@
 package dewep
 
 import (
-	"devtool/app/console"
 	"html/template"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/markus621/devtool/app/console"
 	"github.com/spf13/cobra"
 )
 

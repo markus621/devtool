@@ -1,10 +1,9 @@
 package main
 
 import (
-	"devtool/app/commands/dewep"
-	"devtool/app/commands/golang"
-	"devtool/app/console"
-
+	"github.com/markus621/devtool/app/commands/dewep"
+	"github.com/markus621/devtool/app/commands/golang"
+	"github.com/markus621/devtool/app/console"
 	"github.com/spf13/cobra"
 )
 

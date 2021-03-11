@@ -5,6 +5,11 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/markus621/devtool)](https://goreportcard.com/report/github.com/markus621/devtool)
 [![Build Status](https://travis-ci.com/markus621/devtool.svg?branch=master)](https://travis-ci.com/markus621/devtool)
 
+# install
+
+```bash
+go get github.com/markus621/devtool/cmd/...
+```
 
 # commands
 

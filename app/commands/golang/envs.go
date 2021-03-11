@@ -3,8 +3,7 @@ package golang
 import (
 	"os"
 
-	"devtool/app/console"
-
+	"github.com/markus621/devtool/app/console"
 	"github.com/spf13/cobra"
 )
 

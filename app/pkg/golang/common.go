@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"devtool/app/console"
-	"devtool/app/utils"
+	"github.com/markus621/devtool/app/console"
+	"github.com/markus621/devtool/app/utils"
 )
 
 const (
