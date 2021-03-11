@@ -3,9 +3,8 @@ package golang
 import (
 	"regexp"
 
-	"devtool/app/console"
-	gopkg "devtool/app/pkg/golang"
-
+	"github.com/markus621/devtool/app/console"
+	gopkg "github.com/markus621/devtool/app/pkg/golang"
 	"github.com/spf13/cobra"
 )
 

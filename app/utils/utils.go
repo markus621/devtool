@@ -15,7 +15,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"devtool/app/console"
+	"github.com/markus621/devtool/app/console"
 )
 
 //MakeDir check dir and create if not exist
