@@ -1,4 +1,4 @@
-package commands
+package golang
 
 import (
 	"os"
@@ -13,7 +13,7 @@ func (c *CMD) Envs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "env",
 		Short:   "list system environment",
-		Example: "devtool env",
+		Example: "devtool go env",
 		Args:    cobra.MinimumNArgs(0),
 	}
 
