@@ -1,10 +1,10 @@
-package commands
+package golang
 
 import (
 	"regexp"
 
 	"devtool/app/console"
-	"devtool/app/pkg/golang"
+	gopkg "devtool/app/pkg/golang"
 
 	"github.com/spf13/cobra"
 )
@@ -24,9 +24,9 @@ type (
 //GoInstall ...
 func (c *CMD) GoInstall() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "goinstall",
+		Use:     "i",
 		Short:   "installing golang for linux",
-		Example: "devtool goinstall 1.0.0\ndevtool goinstall tip",
+		Example: "devtool go i 1.0.0\ndevtool go i tip",
 		Args:    cobra.MinimumNArgs(1),
 	}
 
@@ -34,10 +34,10 @@ func (c *CMD) GoInstall() *cobra.Command {
 		version := args[0]
 		var hash string
 
-		golang := golang.New()
-		upderr := golang.UpdateSettings(c.home, c.getEnvfile())
+		pkg := gopkg.New()
+		upderr := pkg.UpdateSettings(c.home, c.getEnvfile())
 
-		versions, err := golang.VersionsList()
+		versions, err := pkg.VersionsList()
 		console.FatalIfErr(err, "can't get a list of possible versions")
 
 		if version == "tip" {
@@ -67,10 +67,10 @@ func (c *CMD) GoInstall() *cobra.Command {
 			console.Info("go: %s, %s", version, hash)
 		}
 
-		out, err := golang.Install(version, hash)
+		out, err := pkg.Install(version, hash)
 		console.FatalIfErr(err, "installation error [%s]", out)
 
-		out, err = golang.UpdateEnv()
+		out, err = pkg.UpdateEnv()
 		console.FatalIfErr(err, "update env error [%s]", out)
 
 		console.FatalIfErr(upderr, "update settings")

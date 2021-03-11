@@ -1,7 +1,8 @@
 package main
 
 import (
-	"devtool/app/commands"
+	"devtool/app/commands/dewep"
+	"devtool/app/commands/golang"
 	"devtool/app/console"
 
 	"github.com/spf13/cobra"
@@ -10,16 +11,14 @@ import (
 var version = "develop"
 
 func main() {
-	rootCMD := &cobra.Command{
+	root := &cobra.Command{
 		Use:     "devtool",
-		Short:   "dev help tool",
+		Short:   "develop help tool",
 		Version: version,
 	}
 
-	cmd := commands.New()
+	root.AddCommand(golang.NewRoot())
+	root.AddCommand(dewep.NewRoot())
 
-	rootCMD.AddCommand(cmd.GoInstall())
-	rootCMD.AddCommand(cmd.Envs())
-
-	console.FatalIfErr(rootCMD.Execute(), "command execute")
+	console.FatalIfErr(root.Execute(), "command execute")
 }
