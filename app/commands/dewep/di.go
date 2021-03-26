@@ -2,6 +2,8 @@ package dewep
 
 import "github.com/spf13/cobra"
 
+var dewepNewProject = ""
+
 //NewRoot root command for golang
 func NewRoot() *cobra.Command {
 	root := &cobra.Command{
@@ -10,6 +12,7 @@ func NewRoot() *cobra.Command {
 	}
 
 	root.AddCommand(NewService())
+	root.AddCommand(NewProject())
 
 	return root
 }
