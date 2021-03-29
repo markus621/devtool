@@ -36,6 +36,7 @@ Usage:
   devtool dewep [command]
 
 Available Commands:
+  new         generate project
   serv        generate service
 
 Flags:
