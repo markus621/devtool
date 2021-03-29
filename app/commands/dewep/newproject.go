@@ -1,6 +1,7 @@
 package dewep
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -59,31 +60,35 @@ func NewProject() *cobra.Command {
 		console.FatalIfErr(cache.FromBase64TarGZ(dewepNewProject), "unpack template")
 
 		for _, filename := range cache.List() {
-			b := string(cache.Get(filename))
+			b := cache.Get(filename)
 
-			outfile := strings.ReplaceAll(filename, "github.com/1-2-3-4-5/6-7-8-9-0", params.Full)
-			outfile = strings.ReplaceAll(outfile, "1-2-3-4-5/6-7-8-9-0", params.Midd)
-			outfile = strings.ReplaceAll(outfile, "6-7-8-9-0", params.Short)
+			filename = strings.ReplaceAll(filename, "github.com/1-2-3-4-5/6-7-8-9-0", params.Full)
+			filename = strings.ReplaceAll(filename, "1-2-3-4-5/6-7-8-9-0", params.Midd)
+			filename = strings.ReplaceAll(filename, "6-7-8-9-0", params.Short)
 
-			list := strings.Split(outfile, "/")
+			list := strings.Split(filename, "/")
 			dirs := strings.Join(list[:len(list)-1], "/")
 
 			if len(dirs) > 0 {
 				console.FatalIfErr(os.MkdirAll(params.Dir+dirs, 0777), "make dir")
 			}
 
-			writer, err := os.OpenFile(params.Dir+outfile, os.O_RDWR|os.O_CREATE, 0755)
+			writer, err := os.OpenFile(params.Dir+filename, os.O_RDWR|os.O_CREATE, 0755)
 			console.FatalIfErr(err, "create file")
 
-			b = strings.ReplaceAll(b, "github.com/1-2-3-4-5/6-7-8-9-0", params.Full)
-			b = strings.ReplaceAll(b, "1-2-3-4-5/6-7-8-9-0", params.Midd)
-			b = strings.ReplaceAll(b, "6-7-8-9-0", params.Short)
+			b = ReplaceAll(b, "github.com/1-2-3-4-5/6-7-8-9-0", params.Full)
+			b = ReplaceAll(b, "1-2-3-4-5/6-7-8-9-0", params.Midd)
+			b = ReplaceAll(b, "6-7-8-9-0", params.Short)
 
-			_, err = writer.WriteString(b)
+			_, err = writer.Write(b)
 			console.FatalIfErr(err, "write file")
 			console.FatalIfErr(writer.Close(), "close file")
 		}
 	}
 
 	return cmd
+}
+
+func ReplaceAll(b []byte, old string, new string) []byte {
+	return bytes.ReplaceAll(b, []byte(old), []byte(new))
 }
