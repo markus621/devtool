@@ -15,7 +15,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/markus621/devtool/app/console"
+	"github.com/deweppro/go-app/console"
 )
 
 //MakeDir check dir and create if not exist
@@ -159,7 +159,7 @@ func ExtractTar(filename, path string) error {
 				return err
 			}
 		case tar.TypeReg:
-			console.Info("extract: %s", path+header.Name)
+			console.Infof("extract: %s", path+header.Name)
 			newfile, err := os.OpenFile(path+header.Name, os.O_RDWR|os.O_CREATE, header.FileInfo().Mode().Perm())
 			if err != nil {
 				return err

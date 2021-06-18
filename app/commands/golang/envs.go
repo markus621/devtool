@@ -3,25 +3,19 @@ package golang
 import (
 	"os"
 
-	"github.com/markus621/devtool/app/console"
-	"github.com/spf13/cobra"
+	"github.com/deweppro/go-app/console"
 )
 
 //Envs ...
-func (c *CMD) Envs() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "env",
-		Short:   "list system environment",
-		Example: "devtool go env",
-		Args:    cobra.MinimumNArgs(0),
-	}
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		console.Info("ENV:")
-		for _, e := range os.Environ() {
-			console.Info(e)
-		}
-	}
-
-	return cmd
+func (c *CMD) Envs() console.CommandGetter {
+	return console.NewCommand(func(setter console.CommandSetter) {
+		setter.Setup("env", "list system environment")
+		setter.Example("go env")
+		setter.ExecFunc(func(args []string) {
+			console.Infof("ENV:")
+			for _, e := range os.Environ() {
+				console.Infof(e)
+			}
+		})
+	})
 }

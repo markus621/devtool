@@ -1,17 +1,16 @@
 package golang
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/deweppro/go-app/console"
+)
 
 //NewRoot root command for golang
-func NewRoot() *cobra.Command {
-	root := &cobra.Command{
-		Use:   "go",
-		Short: "golang",
-	}
+func NewRoot() console.CommandGetter {
+	return console.NewCommand(func(setter console.CommandSetter) {
+		setter.Setup("go", "golang")
 
-	cmd := New()
-	root.AddCommand(cmd.GoInstall())
-	root.AddCommand(cmd.Envs())
-
-	return root
+		cmd := New()
+		setter.AddCommand(cmd.GoInstall())
+		setter.AddCommand(cmd.Envs())
+	})
 }

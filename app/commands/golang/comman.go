@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/markus621/devtool/app/console"
+	"github.com/deweppro/go-app/console"
 )
 
 //noling: golint
@@ -45,14 +45,14 @@ func New() *CMD {
 
 func (c *CMD) validate() {
 	if _, ok := supportedOS[c.osname]; !ok {
-		console.Fatal(fmt.Errorf("your OS (%s) is not supported", c.osname))
+		console.Fatalf("your OS (%s) is not supported", c.osname)
 	}
 }
 
 func (c *CMD) osSwitch(list map[string]interface{}) interface{} {
 	v, ok := list[c.osname]
 	if !ok {
-		console.Fatal(fmt.Errorf("variable is not found for your OS (%s)", c.osname))
+		console.Fatalf("variable is not found for your OS (%s)", c.osname)
 	}
 	return v
 }

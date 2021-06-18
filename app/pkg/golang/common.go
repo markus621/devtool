@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/markus621/devtool/app/console"
+	"github.com/deweppro/go-app/console"
 	"github.com/markus621/devtool/app/utils"
 )
 
@@ -110,7 +110,7 @@ func (c *GoLang) Install(version, hash string) (string, error) {
 	}
 	defer func() {
 		if err := os.Remove(tmp.Name()); err != nil {
-			console.Error("can`t remove temp file: %s", err.Error())
+			console.Errorf("can`t remove temp file: %s", err.Error())
 		}
 	}()
 	if err := utils.DownloadFile(fmt.Sprintf(goDownloadURL, version), tmp.Name()); err != nil {
