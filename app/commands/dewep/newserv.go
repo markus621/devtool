@@ -61,7 +61,9 @@ func NewService() console.CommandGetter {
 
 			r, err := os.OpenFile(v.Filename, os.O_RDWR|os.O_CREATE, 0755)
 			console.FatalIfErr(err, "create file %s", v.Filename)
-			defer r.Close()
+			defer func() {
+				console.FatalIfErr(r.Close(), "close file")
+			}()
 
 			console.FatalIfErr(parse.Execute(r, v), "template generate")
 

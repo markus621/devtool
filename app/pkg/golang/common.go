@@ -109,17 +109,15 @@ func (c *GoLang) Install(version, hash string) (string, error) {
 		return "", err
 	}
 	defer func() {
-		if err := os.Remove(tmp.Name()); err != nil {
-			console.Errorf("can`t remove temp file: %s", err.Error())
-		}
+		console.FatalIfErr(os.Remove(tmp.Name()), "can`t remove temp file: %s", tmp.Name())
 	}()
-	if err := utils.DownloadFile(fmt.Sprintf(goDownloadURL, version), tmp.Name()); err != nil {
+	if err = utils.DownloadFile(fmt.Sprintf(goDownloadURL, version), tmp.Name()); err != nil {
 		return "download error", err
 	}
-	if err := utils.ValidateHash(tmp.Name(), hash); err != nil {
+	if err = utils.ValidateHash(tmp.Name(), hash); err != nil {
 		return "validate error", err
 	}
-	if err := os.RemoveAll(c.root); err != nil {
+	if err = os.RemoveAll(c.root); err != nil {
 		return "can`t delete old version", err
 	}
 	err = utils.ExtractTar(tmp.Name(), c.root+"/../")

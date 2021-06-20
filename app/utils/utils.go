@@ -32,12 +32,16 @@ func DownloadFile(uri, filepath string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		console.FatalIfErr(resp.Body.Close(), "close body")
+	}()
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		console.FatalIfErr(out.Close(), "close file")
+	}()
 	_, err = io.Copy(out, resp.Body)
 	return err
 }
@@ -48,7 +52,9 @@ func HTTPGet(uri string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer r.Body.Close()
+	defer func() {
+		console.FatalIfErr(r.Body.Close(), "close body")
+	}()
 	return ioutil.ReadAll(r.Body)
 }
 
@@ -90,7 +96,9 @@ func WriteFile(filepath string, v ...string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		console.FatalIfErr(f.Close(), "close file")
+	}()
 	for _, vi := range v {
 		if _, err = f.WriteString(vi); err != nil {
 			return err
@@ -105,7 +113,9 @@ func FindInFile(filepath, v string) bool {
 	if err != nil {
 		return false
 	}
-	defer f.Close()
+	defer func() {
+		console.FatalIfErr(f.Close(), "close file")
+	}()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), v) {
@@ -144,7 +154,7 @@ func ExtractTar(filename, path string) error {
 		return err
 	}
 	tr := tar.NewReader(rgz)
-	for true {
+	for {
 		header, err := tr.Next()
 		if err == io.EOF {
 			return nil
@@ -164,13 +174,14 @@ func ExtractTar(filename, path string) error {
 			if err != nil {
 				return err
 			}
-			if _, err := io.Copy(newfile, tr); err != nil {
+			if _, err = io.Copy(newfile, tr); err != nil {
 				return err
 			}
-			newfile.Close()
+			if err = newfile.Close(); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unknow file type")
 		}
 	}
-	return nil
 }
