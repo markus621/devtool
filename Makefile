@@ -17,9 +17,9 @@ pack_demo:
 
 ci:
 	go mod download
+	go build -race -v -o /tmp/devtool ./cmd/devtool/
 	rm -rf $(TOOLS_BIN)
 	mkdir -p $(TOOLS_BIN)
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(TOOLS_BIN) v1.38.0
 	$(TOOLS_BIN)/golangci-lint -v run ./...
-	go build -race -v ./...
 	go test -race -v ./...
