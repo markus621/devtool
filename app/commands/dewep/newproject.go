@@ -53,7 +53,7 @@ func NewProject() console.CommandGetter {
 			console.FatalIfErr(cache.FromBase64TarGZ(dewepNewProject), "unpack template")
 
 			for _, filename := range cache.List() {
-				b := cache.Get(filename)
+				b, _ := cache.Get(filename)
 
 				filename = strings.ReplaceAll(filename, "github.com/1-2-3-4-5/6-7-8-9-0", params.Full)
 				filename = strings.ReplaceAll(filename, "1-2-3-4-5/6-7-8-9-0", params.Midd)
