@@ -16,5 +16,6 @@ gtool
 vendor/
 .vscode/
 .idea/
+.tools/
 
 cmd/devtool/devtool
